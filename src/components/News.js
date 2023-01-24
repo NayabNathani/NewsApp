@@ -49,7 +49,7 @@ export class News extends Component {
     ]
 
     static defaultProps = {
-        country: 'us',
+        country: 'in',
         pageSize: 10,
         country: 'general',
 
@@ -62,26 +62,36 @@ export class News extends Component {
 
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         // console.log("Cons From News Component");
         this.state = {
             articles: this.articles,
             loading: false,
             page: 1
         }
+        document.title = `${this.capitalizeFirstLetter(this.props.category)} - NewMonkey`;
     }
 
+    capitalizeFirstLetter = (string)=> {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+
     async updateNews() {
+        this.props.setProgress(10);
         const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=03576bafb64e486f9b384d81315f196d&page=${this.state.page}&pageSize=${this.props.pageSize}`;
         // this.setState({loading: true})
         let data = await fetch(url);
+        this.props.setProgress(30);
         let parsedData = await data.json();
+        this.props.setProgress(70);
         // console.log(parsedData);
         this.setState({
             articles: parsedData.articles,
             totalResults: parsedData.totalResults
         })
+        this.props.setProgress(100);
+
     }
 
     async componentDidMount() {
@@ -133,9 +143,10 @@ export class News extends Component {
     render() {
         return (
             <div className='container my-3'>
-                <h1 className='text-center' style={{ margin: '35px 0px' }}>News Monkey Top Headlines</h1>
-                {this.state.loading && <Spinner />}
+                <h1 className='text-center' style={{ margin: '35px 0px' }}>News Monkey Top <strong style={{ color: '#5d5d5d' }}>{this.capitalizeFirstLetter(this.props.category)}</strong> Headlines</h1>
+                {/* {this.state.loading && <Spinner />} */}
                 <div className="row my-3">
+                {/* !this.state.loading &&  */}
                     {!this.state.loading && this.state.articles.map((element) => {
                         return <div className="col-md-4 my-3" key={element.url}>
                             <NewsItems title={element.title ? element.title : ""} description={element.description ? element.description : ""} imageUrl={element.urlToImage} newsUrl={element.url} author={element.author} date={element.publishedAt} source={element.source.name} />
